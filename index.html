@@ -1,0 +1,143 @@
+<!-- CSUMB CST336 Summer 2019 Lab 3
+      Bodey Provansal
+      https://bopr19-lab3.herokuapp.com/ -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Sign-Up Page</title>
+    <link  href="css/styles.css" rel="stylesheet" type="text/css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  </head>
+  <body>
+    <h1> Sign Up </h1>
+    <div class="card">
+      <form id="signupForm" method="post" action="welcome.html">
+        First Name: <input type="text" name="fName"><br>
+        Last Name:  <input type="text" name="lName"><br>
+        Gender:     <input type="radio" name="gender" value="m"> Male
+                    <input type="radio" name="gender" value="f"> Female<br><br>
+        Zip Code:   <input type="text" name="zip" id="zip"> <br>
+        City:       <span id="city"></span> <br>
+        Latitude:   <span id="latitude"></span><br>
+        Longitude:  <span id="longitude"></span><br><br>
+        
+        State: 
+        <select id="state" name="state">
+          <option value="">Select One</option>
+          <!--<option value="ca"> California</option>
+          <option value="ny"> New York</option>
+          <option value="tx"> Texas</option> -->
+        </select> <br />
+    
+       Select A County: <select id="county"></select> <br><br>
+       
+       Desired Username: <input type="text"     id="username" name="username"><br>
+                         <span id="usernameError"></span><br>
+       Password:         <input type="password" id="password" name="password"><br>
+                         <span id="passwordError"></span><br>
+       Password Again:   <input type="password" id="passwordAgain"><br>
+                         <span id="passwordAgainError"></span> <br /> <br>
+    
+       <input type="submit" value="Sign Up!">
+    </form>
+    </div>
+    <script>
+        var usernameAvailable = false;
+        $("#state").ready(function() {
+          $.ajax({
+            method:"GET",
+            url: "https://cst336.herokuapp.com/projects/api/state_abbrAPI.php",
+            dataType: "json",
+            data: {"state" : $("#state").val() },
+            success: function(result, status) {          
+              $("#state").html("<option> Select One </option>");
+              for (let i=0; i < result.length; i++) {
+                $("#state").append("<option value='" + result[i].usps + "'>" + result[i].state + "</option>");
+              }
+            }
+          });//ajax
+        });//LOAD STATE
+      
+        $("#zip").on("change", function() {
+            $.ajax({
+                method:"GET",
+              url: "https://cst336.herokuapp.com/projects/api/cityInfoAPI.php",
+              dataType: "json",
+              data: { "zip": $("#zip").val() },
+                     success: function(result, status) {
+                       $("#city").html(result.city);
+                       $("#latitude").html(result.latitude);
+                       $("#longitude").html(result.longitude);
+                     }
+            });//ajax
+        });//ZIP 
+        $("#state").on("change", function() {
+          $.ajax({
+            method: "GET",
+            url: "https://cst336.herokuapp.com/projects/api/countyListAPI.php",
+            dataType: "json",
+            data: { "state" : $("#state").val() },
+            success: function(result, status) {
+              $("#county").html("<option> Select One </option");
+              for (let i=0; i < result.length; i++){
+                $("#county").append("<option>" + result[i].county + "</option>");
+              }
+            }
+          });//ajax
+        });//STATE
+      $("#username").on("change", function() {
+        $.ajax({
+          method: "GET",
+          url: "https://cst336.herokuapp.com/projects/api/usernamesAPI.php",
+          dataType: "json",
+          data: { "username" : $("#username").val() },
+          success: function(result, status) {
+            if (result.available) {
+              $("#usernameError").html("Username is available!");
+              $("#usernameError").css("color", "green");
+              usernameAvailable = true;
+            } else {
+              $("#usernameError").html("Username has already been used.");
+              $("#usernameError").css("color", "red");
+              usernameAvailable = false;
+            }
+          }
+        });//ajax
+      });//User Name
+      $("#signupForm").on("submit", function(e) {
+        alert("Submitting Form...");
+        if(!isFormValid()) {
+          e.preventDefault();
+          
+        }
+      });//SUBMIT FORM
+      
+      function isFormValid() {
+        isValid = true;
+        if (!usernameAvailable) {
+          isValid = false;
+        }
+        
+        if ($("#username").val().length == 0) {
+          $("#usernameError").html("User Name is required");
+          isValid = false;
+        }
+        
+        if ($("#password").val() != $("#passwordAgain").val()) {
+          $("#passwordAgainError").html("Passwords Do Not Match");
+          $("#passwordAgainError").css("color", "red");
+          isValid = false;
+        }
+        
+        if ($("#password").val().length < 6) {
+          $("#passwordError").html("Password must by at least 6 characters long.");
+          $("#passwordError").css("color", "red");
+          isValid = false;
+        }
+        
+        return isValid;
+      }
+    </script>
+  </body>
+</html>
