@@ -18,6 +18,7 @@
         Gender:     <input type="radio" name="gender" value="m"> Male
                     <input type="radio" name="gender" value="f"> Female<br><br>
         Zip Code:   <input type="text" name="zip" id="zip"> <br>
+                    <span id="zipError"></span><br>
         City:       <span id="city"></span> <br>
         Latitude:   <span id="latitude"></span><br>
         Longitude:  <span id="longitude"></span><br><br>
@@ -66,9 +67,14 @@
               dataType: "json",
               data: { "zip": $("#zip").val() },
                      success: function(result, status) {
-                       $("#city").html(result.city);
-                       $("#latitude").html(result.latitude);
-                       $("#longitude").html(result.longitude);
+                       $("#zipError").html("");
+                       if(result == false) {
+                         $("#zipError").html("Zip code not found.");
+                       } else {             
+                         $("#city").html(result.city);
+                         $("#latitude").html(result.latitude);
+                         $("#longitude").html(result.longitude);
+                       }
                      }
             });//ajax
         });//ZIP 
@@ -93,6 +99,7 @@
           dataType: "json",
           data: { "username" : $("#username").val() },
           success: function(result, status) {
+            $("#usernameError").html("");
             if (result.available) {
               $("#usernameError").html("Username is available!");
               $("#usernameError").css("color", "green");
@@ -120,12 +127,12 @@
         }
         
         if ($("#username").val().length == 0) {
-          $("#usernameError").html("User Name is required");
+          $("#usernameError").html("User Name is required.");
           isValid = false;
         }
         
         if ($("#password").val() != $("#passwordAgain").val()) {
-          $("#passwordAgainError").html("Passwords Do Not Match");
+          $("#passwordAgainError").html("Passwords Do Not Match. Please Retype Password.");
           $("#passwordAgainError").css("color", "red");
           isValid = false;
         }
